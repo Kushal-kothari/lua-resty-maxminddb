@@ -1,59 +1,43 @@
-ngx_addon_name=ngx_http_dubbo_module
+ngx_feature="MaxmindDB library"
+ngx_feature_name=
+ngx_feature_run=no
+ngx_feature_incs="#include <maxminddb.h>"
+ngx_feature_libs=-lmaxminddb
+ngx_feature_test="MMDB_s mmdb"
+. auto/feature
 
-HTTP_DUBBO_DEPS=" \
-    $ngx_addon_dir/ngx_http_dubbo_module.h \
-    $ngx_addon_dir/ngx_dubbo.h"
+ngx_addon_name="ngx_geoip2_module"
 
-HTTP_DUBBO_SRCS=" \
-    $ngx_addon_dir/ngx_dubbo_util.cpp \
-    $ngx_addon_dir/utils/objects.cc \
-    $ngx_addon_dir/utils/utils.cc \
-    $ngx_addon_dir/hessian2/hessian2_ext.cc \
-    $ngx_addon_dir/hessian2/hessian2_input.cc \
-    $ngx_addon_dir/hessian2/hessian2_output.cc \
-    $ngx_addon_dir/ngx_dubbo.c \
-    $ngx_addon_dir/ngx_http_dubbo_module.c"
+if [ $ngx_found = yes ]; then
+	if test -n "$ngx_module_link"; then
+		if [ $HTTP != NO ]; then
+			ngx_module_type=HTTP
+			ngx_module_name="ngx_http_geoip2_module"
+			ngx_module_incs=
+			ngx_module_deps=
+			ngx_module_srcs="$ngx_addon_dir/ngx_http_geoip2_module.c"
+			ngx_module_libs="$ngx_feature_libs"
+			. auto/module
+		fi
 
-ngx_module_incs=" \
-    $ngx_addon_dir \
-    $ngx_addon_dir/utils \
-    $ngx_addon_dir/hessian2"
-
-CORE_LIBS="$CORE_LIBS -lstdc++"
-
-if test -n "$ngx_module_link"; then
-    ngx_module_type=HTTP
-    ngx_module_name=$ngx_addon_name
-    ngx_module_deps="$HTTP_DUBBO_DEPS"
-    ngx_module_srcs="$HTTP_DUBBO_SRCS"
-
-    . auto/module
-else
-    HTTP_MODULES="$HTTP_MODULES $ngx_addon_name"
-    NGX_ADDON_DEPS="$NGX_ADDON_DEPS $HTTP_DUBBO_DEPS"
-    NGX_ADDON_SRCS="$NGX_ADDON_SRCS $HTTP_DUBBO_SRCS"
-
-    CORE_INCS="$CORE_INCS $ngx_module_incs"
-fi
-
-have=T_NGX_DUBBO . auto/have
-
-if [ "$NGX_PLATFORM" != win32 ]; then
-    ngx_feature="compiler structure-packing pragma"
-    ngx_feature_name="NGX_HAVE_PACK_PRAGMA"
-    ngx_feature_run=yes
-    ngx_feature_incs=
-    ngx_feature_path=
-    ngx_feature_libs=
-    ngx_feature_test="#pragma pack(push, 1)
-                      struct test_s {
-                          char foo;
-                          int  bar;
-                      };
-                      #pragma pack(pop)
-
-                      if (sizeof(struct test_s) != (sizeof(char) + sizeof(int)))
-                          return 1;"
-
-    . auto/feature
+		nginx_version=`awk '/^#define nginx_version / {print $3}' src/core/nginx.h`
+		if [ $STREAM != NO -a $nginx_version -gt 1011001 ]; then
+			ngx_module_type=STREAM
+			ngx_module_name="ngx_stream_geoip2_module"
+			ngx_module_incs=
+			ngx_module_deps=
+			ngx_module_srcs="$ngx_addon_dir/ngx_stream_geoip2_module.c"
+			ngx_module_libs="$ngx_feature_libs"
+			. auto/module
+		fi
+	else
+		HTTP_MODULES="$HTTP_MODULES ngx_http_geoip2_module"
+		NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_http_geoip2_module.c"
+		CORE_LIBS="$CORE_LIBS $ngx_feature_libs"
+	fi
+else   
+	cat << END
+$0: error: the geoip2 module requires the maxminddb library.
+END
+	exit 1
 fi

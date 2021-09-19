@@ -6,7 +6,3 @@ ngx_module_name=ngx_lua_resty_maxminddb_module
 ngx_addon_name=$ngx_module_name
 
 have=T_NGX_LUA_RESTY_MAXMINDDB . auto/have
-
--------------------------------------------------------------------
-
-

@@ -1,7 +1,6 @@
 ngx_module_type=HTTP
 ngx_module_name=lua-resty-maxminddb-module
 ngx_module_srcs="$lib/resty/maxminddb.lua"
-ngx_module_deps=$ngx_addon_dir/src/ngx_http_apisix_module.h
 ngx_module_incs="$lib"
 ngx_addon_name=$ngx_module_name
 
